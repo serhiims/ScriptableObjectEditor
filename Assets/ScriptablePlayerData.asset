@@ -13,9 +13,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   health: 100
   name: Nick
-  startingPosition: {x: 412314, y: 3124123, z: 4123123}
-  _keys:
+  startingPosition: {x: 0, y: 0, z: 0}
+  keys:
   - money
   - arrows
   - shovels
-  _values: 960000000f00000002000000
+  values: 960000000f00000002000000

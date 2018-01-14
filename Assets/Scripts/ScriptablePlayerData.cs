@@ -16,31 +16,31 @@ public class ScriptablePlayerData : ScriptableObject, ISerializationCallbackRece
 
     [HideInInspector]
     [SerializeField]
-    private List<string> _keys;
+	public List<string> keys;
 
-    [HideInInspector]
+	[HideInInspector]
     [SerializeField]
-    private List<int> _values;
+    public List<int> values;
 
     public void OnBeforeSerialize()
     {
-        _keys = new List<string>();
-        _values = new List<int>();
+        keys = new List<string>();
+        values = new List<int>();
 
         foreach (var keyValuePair in inventory)
         {
-            _keys.Add(keyValuePair.Key);
-            _values.Add(keyValuePair.Value);
+            keys.Add(keyValuePair.Key);
+            values.Add(keyValuePair.Value);
         }
     }
 
     public void OnAfterDeserialize()
     {
-        inventory = new Dictionary<string, int>(_keys.Count);
+        inventory = new Dictionary<string, int>(keys.Count);
 
-        for (int i = 0; i < _keys.Count; i++)
+        for (int i = 0; i < keys.Count; i++)
         {
-            inventory[_keys[i]] = _values[i];
+            inventory[keys[i]] = values[i];
         }
     }
 }
