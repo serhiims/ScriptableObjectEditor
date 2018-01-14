@@ -16,6 +16,7 @@ MonoBehaviour:
   startingPosition: {x: 0, y: 0, z: 0}
   keys:
   - money
+  - coins
   - arrows
-  - shovels
-  values: 960000000f00000002000000
+  - 1
+  values: 960000000f0000006400000000000000

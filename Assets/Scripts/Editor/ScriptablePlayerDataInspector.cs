@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 
 [CustomEditor(typeof(ScriptablePlayerData))]
 public class ScriptablePlayerDataInspector : Editor
@@ -18,7 +19,8 @@ public class ScriptablePlayerDataInspector : Editor
 
 		SerializedProperty keysProperty = localSerializedObject.FindProperty(GetMemberName(() => scriptablePlayerData.keys));
 		SerializedProperty valuesProperty = localSerializedObject.FindProperty(GetMemberName(() => scriptablePlayerData.values));
-
+	
+		EditorGUI.BeginChangeCheck ();
         EditorGUILayout.PropertyField(nameProperty);
         EditorGUILayout.PropertyField(healthProperty);
 
@@ -30,23 +32,47 @@ public class ScriptablePlayerDataInspector : Editor
             positionProperty.vector3Value = EditorGUILayout.Vector3Field("", positionProperty.vector3Value);
         }
 
-		showDictionary (keysProperty, valuesProperty);
+		keysProperty.isExpanded = EditorGUILayout.Foldout(keysProperty.isExpanded, "Inventory:");
+		if (keysProperty.isExpanded) {
+			showDictionary (keysProperty, valuesProperty, scriptablePlayerData);
+			if (GUILayout.Button ("+", GUILayout.MinWidth (10))) {
+				string newKey = "newKey" + keysProperty.arraySize;
+				scriptablePlayerData.inventory.Add (newKey, 0);
+				saveCurrentScene();
+			}
+		}
 
-        localSerializedObject.ApplyModifiedProperties();
-		if (GUI.changed) {
-			Debug.Log ("Changed");
-			//EditorApplication.SaveScene();
+		if(EditorGUI.EndChangeCheck()){
+			localSerializedObject.ApplyModifiedProperties();
+			saveCurrentScene();
 		}
     }
 
-	private void showDictionary(SerializedProperty keys, SerializedProperty values){
-		for (int i = 0; i < keys.arraySize; i++) {
-			EditorGUILayout.DelayedTextField(keys.GetArrayElementAtIndex(i));
-			EditorGUILayout.PropertyField(values.GetArrayElementAtIndex(i));
-		}
-		//EditorGUILayout.PropertyField(m_IntProp, new GUIContent("Int Field"), GUILayout.Height(20));
+	private void saveCurrentScene(){
+		EditorSceneManager.SaveScene (EditorSceneManager.GetActiveScene ());
 	}
 
+	private void showDictionary(SerializedProperty keys, SerializedProperty values, ScriptablePlayerData data){
+		if (keys == null || values == null) {
+			Debug.Log ("Dictionary is empty");
+			return;
+		}
+		for (int i = 0, l = keys.arraySize; i < l; i++) {
+			EditorGUILayout.BeginHorizontal ();
+			EditorGUILayout.PropertyField (keys.GetArrayElementAtIndex(i), GUIContent.none, true, GUILayout.MinWidth(60));
+			GUILayout.Space (8);
+			EditorGUILayout.PropertyField(values.GetArrayElementAtIndex(i), GUIContent.none, true, GUILayout.MinWidth(60));
+			GUILayout.Space (8);
+			if (GUILayout.Button ("-", GUILayout.MaxWidth(30))) {
+				Debug.Log ("Remove key: " + keys.GetArrayElementAtIndex(i).stringValue);
+				data.inventory.Remove (keys.GetArrayElementAtIndex (i).stringValue);
+				saveCurrentScene();
+			}
+			EditorGUILayout.EndHorizontal();
+			EditorGUILayout.Space ();
+		}
+	}
+		
     public static string GetMemberName<TValue>(Expression<Func<TValue>> memberAccess)
     {
         return ((MemberExpression)memberAccess.Body).Member.Name;
