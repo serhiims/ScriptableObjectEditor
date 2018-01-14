@@ -15,8 +15,7 @@ MonoBehaviour:
   name: Nick
   startingPosition: {x: 0, y: 0, z: 0}
   keys:
-  - money
-  - coins
-  - arrows
-  - 1
-  values: 960000000f0000006400000000000000
+  - gold
+  - silver
+  - wood
+  values: 020000000400000006000000

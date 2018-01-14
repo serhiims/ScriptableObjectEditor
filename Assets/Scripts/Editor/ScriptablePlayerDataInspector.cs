@@ -8,19 +8,21 @@ using UnityEditor.SceneManagement;
 [CustomEditor(typeof(ScriptablePlayerData))]
 public class ScriptablePlayerDataInspector : Editor
 {
+	private SerializedObject _localSerializedObject;
+	 
     public override void OnInspectorGUI()
     {
+		_localSerializedObject = new SerializedObject(target);
         var scriptablePlayerData = (ScriptablePlayerData) target;
-        var localSerializedObject = new SerializedObject(target);
 
-        SerializedProperty nameProperty = localSerializedObject.FindProperty(GetMemberName(() => scriptablePlayerData.name));
-        var healthProperty = localSerializedObject.FindProperty(GetMemberName(() => scriptablePlayerData.health));
-        var positionProperty = localSerializedObject.FindProperty(GetMemberName(() => scriptablePlayerData.startingPosition));
-
-		SerializedProperty keysProperty = localSerializedObject.FindProperty(GetMemberName(() => scriptablePlayerData.keys));
-		SerializedProperty valuesProperty = localSerializedObject.FindProperty(GetMemberName(() => scriptablePlayerData.values));
-	
+        SerializedProperty nameProperty = _localSerializedObject.FindProperty(GetMemberName(() => scriptablePlayerData.name));
+        var healthProperty = _localSerializedObject.FindProperty(GetMemberName(() => scriptablePlayerData.health));
+        var positionProperty = _localSerializedObject.FindProperty(GetMemberName(() => scriptablePlayerData.startingPosition));
 		EditorGUI.BeginChangeCheck ();
+		SerializedProperty keysProperty = _localSerializedObject.FindProperty(GetMemberName(() => scriptablePlayerData.keys));
+		SerializedProperty valuesProperty = _localSerializedObject.FindProperty(GetMemberName(() => scriptablePlayerData.values));
+	
+
         EditorGUILayout.PropertyField(nameProperty);
         EditorGUILayout.PropertyField(healthProperty);
 
@@ -38,17 +40,20 @@ public class ScriptablePlayerDataInspector : Editor
 			if (GUILayout.Button ("+", GUILayout.MinWidth (10))) {
 				string newKey = "newKey" + keysProperty.arraySize;
 				scriptablePlayerData.inventory.Add (newKey, 0);
-				saveCurrentScene();
+				EditorUtility.SetDirty (target);
 			}
 		}
 
 		if(EditorGUI.EndChangeCheck()){
-			localSerializedObject.ApplyModifiedProperties();
+			Debug.Log ("OnChanged");
 			saveCurrentScene();
 		}
     }
 
-	private void saveCurrentScene(){
+	private void saveCurrentScene(){		
+		if (_localSerializedObject != null) {
+			_localSerializedObject.ApplyModifiedProperties();
+		}
 		EditorSceneManager.SaveScene (EditorSceneManager.GetActiveScene ());
 	}
 
@@ -66,7 +71,7 @@ public class ScriptablePlayerDataInspector : Editor
 			if (GUILayout.Button ("-", GUILayout.MaxWidth(30))) {
 				Debug.Log ("Remove key: " + keys.GetArrayElementAtIndex(i).stringValue);
 				data.inventory.Remove (keys.GetArrayElementAtIndex (i).stringValue);
-				saveCurrentScene();
+				EditorUtility.SetDirty (target);
 			}
 			EditorGUILayout.EndHorizontal();
 			EditorGUILayout.Space ();
